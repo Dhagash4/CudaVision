@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
+import seaborn as sns
 
 
 def smooth(f, K=5):
@@ -52,8 +53,8 @@ def plot_stats(train_loss, val_loss, loss_iters, valid_acc):
     return
 
 
-def plot_confusion_matrix(cm, label_dict, title='Confusion matrix', cmap=plt.cm.Blues):
-
+def plot_confusion_matrix(cm, label_dict, title='Confusion matrix', size=(15, 8), cmap=plt.cm.Blues):
+    (h, w) = size
     ax = plt.subplot()
 
     # annot=True to annotate cells, ftm='g' to disable scientific notation
@@ -69,3 +70,9 @@ def plot_confusion_matrix(cm, label_dict, title='Confusion matrix', cmap=plt.cm.
     ax.set_yticks([k for k in label_dict.keys()])
     ax.set_xticklabels(x_axis, rotation=90)
     ax.set_yticklabels(y_axis, rotation=0)
+
+    plt.gcf().set_size_inches(h, w)
+
+    plt.show()
+
+    return

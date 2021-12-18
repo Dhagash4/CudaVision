@@ -4,7 +4,8 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import numpy as np
 import os
-from utils.plot_utils import plot_stats
+from utils.plot_utils import *
+from sklearn.metrics import confusion_matrix
 
 
 def save_model(model, optimizer, epoch, stats, name):
@@ -53,13 +54,15 @@ def load_model(model, optimizer, savepath, plot):
         plot_stats(train_loss=train_loss, val_loss=val_loss,
                    loss_iters=loss_iters, valid_acc=valid_acc)
 
-    return model, optimizer, epoch, stats
+    return model, optimizer
 
 
-def test_model(model, test_loader, device):
+def test_model(model, test_loader, device, plot_cm, label_dict):
 
     correct = 0
     total = 0
+    labels_out = []
+    pred_labels = []
 
     for images, labels in test_loader:
         images = images.to(device)
@@ -72,9 +75,16 @@ def test_model(model, test_loader, device):
         preds = torch.argmax(outputs, dim=1)
         correct += len(torch.where(preds == labels)[0])
         total += len(labels)
+        pred_labels.append(preds.detach().cpu().numpy())
+        labels_out.append(labels.detach().cpu().numpy())
 
     # Total correct predictions and loss
     accuracy = correct / total * 100
+    if plot_cm:
+        labels_out = np.concatenate(labels_out, axis=0)
+        pred_labels = np.concatenate(pred_labels, axis=0)
+        cm = confusion_matrix(labels_out, pred_labels)
+        plot_confusion_matrix(cm, label_dict)
 
     return accuracy
 
