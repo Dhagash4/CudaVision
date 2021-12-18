@@ -49,5 +49,23 @@ def plot_stats(train_loss, val_loss, loss_iters, valid_acc):
 
     plt.show()
 
+    return
 
-pass
+
+def plot_confusion_matrix(cm, label_dict, title='Confusion matrix', cmap=plt.cm.Blues):
+
+    ax = plt.subplot()
+
+    # annot=True to annotate cells, ftm='g' to disable scientific notation
+    sns.heatmap(cm, annot=True, fmt='g', ax=ax)
+
+    # labels, title and ticks
+    ax.set_xlabel('Predicted labels')
+    ax.set_ylabel('True labels')
+    ax.set_title('Confusion Matrix')
+    x_axis = [v for v in label_dict.values()]
+    y_axis = [v for v in label_dict.values()]
+    ax.set_xticks([k for k in label_dict.keys()])
+    ax.set_yticks([k for k in label_dict.keys()])
+    ax.set_xticklabels(x_axis, rotation=90)
+    ax.set_yticklabels(y_axis, rotation=0)

@@ -8,19 +8,19 @@ import torch.nn as nn
 import torchvision
 from torchvision import datasets, models, transforms
 from torch.utils.tensorboard import SummaryWriter
-from model_utils import save_model
-from plot_utils import plot_stats
+from utils.model_utils import save_model
+from utils.plot_utils import plot_stats
 
 
 class Trainer():
 
-    def __init__(self, name, model, epochs, train_loader, eval_loader, criterion, scheduler, optimizer, device, save_true, plot, save_freq, eval_freq) -> None:
+    def __init__(self, name, model, epochs, train_loader, eval_loader, criterion, scheduler, optimizer, device, save_true, plot, save_freq, eval_freq):
 
         self.model = model
         self.epochs = epochs
         self.train_loader = train_loader
         self.eval_loader = eval_loader
-        self.criteerion = criterion
+        self.criterion = criterion
         self.scheduler = scheduler
         self.optimizer = optimizer
         self.device = device
@@ -29,7 +29,8 @@ class Trainer():
         self.eval_freq = eval_freq
         self.best_accuracy = 0.0
         self.plot = plot
-        self.logger = SummaryWriter(f'runs/{name}')
+        self.logger = SummaryWriter()
+        self.name = name
         self.stats = stats = {
             "epoch": [],
             "train_loss": [],
@@ -43,7 +44,8 @@ class Trainer():
         """ Training a model for one epoch """
 
         loss_list = []
-        for i, (images, labels) in enumerate(self.trainloader):
+
+        for i, (images, labels) in enumerate(self.train_loader):
             images = images.to(self.device)
             labels = labels.to(self.device)
 
@@ -74,6 +76,7 @@ class Trainer():
         loss_list = []
 
         for images, labels in self.eval_loader:
+
             images = images.to(self.device)
             labels = labels.to(self.device)
 
@@ -90,6 +93,7 @@ class Trainer():
 
         # Total correct predictions and loss
         accuracy = correct / total * 100
+
         loss = np.mean(loss_list)
 
         return accuracy, loss
@@ -102,8 +106,10 @@ class Trainer():
         loss_iters = []
         valid_acc = []
 
-        for epoch in range(self.epochs):
-            self.stats['epochs'].append(epoch)
+        progress_bar = tqdm(range(self.epochs), total=self.epochs)
+
+        for epoch in progress_bar:
+            self.stats['epoch'].append(epoch)
             # validation epoch
             self.model.eval()  # important for dropout and batch norms
             accuracy, loss = self.eval_model()
@@ -116,17 +122,13 @@ class Trainer():
             self.scheduler.step()
             train_loss.append(mean_loss)
             loss_iters = loss_iters + cur_loss_iters
+            progress_bar.set_description(
+                f"Epoch {epoch+1} loss {mean_loss:.5f}. ")
 
-            if(epoch % self.eval_freq == 0 or epoch == self.epochs-1):
-                self.logger.add_scalar('train_loss',
-                                       round(mean_loss, 5),
-                                       (epoch+1)/(self.epochs))
-                self.logger.add_scalar('val_loss',
-                                       round(loss, 5),
-                                       (epoch+1)/(self.epochs))
-                self.logger.add_scalar('accuracy',
-                                       accuracy,
-                                       (epoch+1)/(self.epochs))
+            # Logging
+            self.logger.add_scalar('train_loss', round(mean_loss, 5), epoch)
+            self.logger.add_scalar('val_loss', round(loss, 5), epoch)
+            self.logger.add_scalar('accuracy', accuracy, epoch)
 
             if(epoch % self.save_freq == 0 or epoch == self.epochs-1):
                 self.stats['val_loss'] = val_loss

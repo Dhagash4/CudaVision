@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import numpy as np
 import os
-from plot_utils import plot_stats
+from utils.plot_utils import plot_stats
 
 
 def save_model(model, optimizer, epoch, stats, name):
@@ -77,3 +77,9 @@ def test_model(model, test_loader, device):
     accuracy = correct / total * 100
 
     return accuracy
+
+
+def count_model_params(model):
+    """ Counting the number of learnable parameters in a nn.Module """
+    num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return num_params
