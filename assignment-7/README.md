@@ -1,2 +1,2 @@
-![GeneratedFaces](img/progress_128.gif)
+![GeneratedFaces](imgs/training/progress_128.gif)
 
