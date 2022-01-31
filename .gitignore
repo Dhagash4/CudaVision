@@ -136,3 +136,4 @@ dmypy.json
 #Notuseful folder
 data/
 data_augmentation/
+**/*tboard_logs/
